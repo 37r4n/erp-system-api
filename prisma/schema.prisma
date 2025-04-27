@@ -1,0 +1,50 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  // columns
+  id              String    @id @default(uuid()) @db.Uuid
+  name            String
+  email           String    @unique
+  password        String
+  is_active       Boolean   @default(true)
+
+  // timestamp
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  deleted_at      DateTime?
+
+  // relations one to many
+  sessions        Session[]
+
+  // keys
+  @@map("users")
+}
+
+model Session {
+  // columns
+  id              String      @id @default(uuid()) @db.Uuid
+  token           String      @unique
+  user_id         String      @db.Uuid
+  is_revoked      Boolean     @default(false)
+
+  // timestamp
+  revoked_at      DateTime?
+  expires_at      DateTime    @default(now())
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+  deleted_at      DateTime?
+  
+  // relations many to one
+  user            User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  // keys
+  @@map("sessions")
+}
